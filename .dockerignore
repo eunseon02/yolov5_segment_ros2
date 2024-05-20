@@ -1,5 +1,9 @@
 # Repo-specific DockerIgnore -------------------------------------------------------------------------------------------
+<<<<<<< HEAD
 .git
+=======
+# .git
+>>>>>>> temp-branch
 .cache
 .idea
 runs
@@ -8,6 +12,7 @@ coco
 storage.googleapis.com
 
 data/samples/*
+<<<<<<< HEAD
 **/results*.csv
 *.jpg
 
@@ -25,6 +30,21 @@ data/samples/*
 *_saved_model/
 *_web_model/
 *_openvino_model/
+=======
+!data/samples/zidane.jpg
+!data/samples/bus.jpg
+**/results*.txt
+*.jpg
+
+# Neural Network weights -----------------------------------------------------------------------------------------------
+**/*.weights
+**/*.pt
+**/*.onnx
+**/*.mlmodel
+**/darknet53.conv.74
+**/yolov3-tiny.conv.15
+
+>>>>>>> temp-branch
 
 # Below Copied From .gitignore -----------------------------------------------------------------------------------------
 # Below Copied From .gitignore -----------------------------------------------------------------------------------------
@@ -55,7 +75,10 @@ sdist/
 var/
 wheels/
 *.egg-info/
+<<<<<<< HEAD
 wandb/
+=======
+>>>>>>> temp-branch
 .installed.cfg
 *.egg
 
@@ -117,9 +140,15 @@ celerybeat-schedule
 .env
 
 # virtualenv
+<<<<<<< HEAD
 .venv*
 venv*/
 ENV*/
+=======
+.venv
+venv/
+ENV/
+>>>>>>> temp-branch
 
 # Spyder project settings
 .spyderproject

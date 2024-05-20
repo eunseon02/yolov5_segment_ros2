@@ -1,14 +1,22 @@
+<<<<<<< HEAD
 # YOLOv5 🚀 by Ultralytics, AGPL-3.0 license
 
 name: Close stale issues
 on:
   schedule:
     - cron: "0 0 * * *" # Runs at 00:00 UTC every day
+=======
+name: Close stale issues
+on:
+  schedule:
+  - cron: "0 0 * * *"
+>>>>>>> temp-branch
 
 jobs:
   stale:
     runs-on: ubuntu-latest
     steps:
+<<<<<<< HEAD
       - uses: actions/stale@v9
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
@@ -45,3 +53,13 @@ jobs:
           days-before-pr-close: 30
           exempt-issue-labels: "documentation,tutorial,TODO"
           operations-per-run: 300 # The maximum number of operations per run, used to control rate limiting.
+=======
+    - uses: actions/stale@v1
+      with:
+        repo-token: ${{ secrets.GITHUB_TOKEN }}
+        stale-issue-message: 'This issue is stale because it has been open 30 days with no activity. Remove Stale label or comment or this will be closed in 5 days.'
+        stale-pr-message: 'This pull request is stale because it has been open 30 days with no activity. Remove Stale label or comment or this will be closed in 5 days.'
+        days-before-stale: 30
+        days-before-close: 5
+        exempt-issue-label: 'tutorial'
+>>>>>>> temp-branch

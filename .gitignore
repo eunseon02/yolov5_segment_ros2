@@ -19,13 +19,19 @@
 *.avi
 *.data
 *.json
+<<<<<<< HEAD
 *.cfg
 !setup.cfg
+=======
+
+*.cfg
+>>>>>>> temp-branch
 !cfg/yolov3*.cfg
 
 storage.googleapis.com
 runs/*
 data/*
+<<<<<<< HEAD
 data/images/*
 !data/*.yaml
 !data/hyps
@@ -41,6 +47,21 @@ results*.csv
 coco/
 coco128/
 VOC/
+=======
+!data/samples/zidane.jpg
+!data/samples/bus.jpg
+!data/coco.names
+!data/coco_paper.names
+!data/coco.data
+!data/coco_*.data
+!data/coco_*.txt
+!data/trainvalno5k.shapes
+!data/*.sh
+
+pycocotools/*
+results*.txt
+gcp_test*.sh
+>>>>>>> temp-branch
 
 # MATLAB GitIgnore -----------------------------------------------------------------------------------------------------
 *.m~
@@ -50,6 +71,7 @@ VOC/
 # Neural Network weights -----------------------------------------------------------------------------------------------
 *.weights
 *.pt
+<<<<<<< HEAD
 *.pb
 *.onnx
 *.engine
@@ -61,6 +83,10 @@ VOC/
 *_web_model/
 *_openvino_model/
 *_paddle_model/
+=======
+*.onnx
+*.mlmodel
+>>>>>>> temp-branch
 darknet53.conv.74
 yolov3-tiny.conv.15
 
@@ -89,11 +115,17 @@ sdist/
 var/
 wheels/
 *.egg-info/
+<<<<<<< HEAD
 /wandb/
 .installed.cfg
 *.egg
 
 
+=======
+.installed.cfg
+*.egg
+
+>>>>>>> temp-branch
 # PyInstaller
 #  Usually these files are written by a python script from a template
 #  before PyInstaller builds the exe, so as to inject date/other infos into it.
@@ -152,9 +184,15 @@ celerybeat-schedule
 .env
 
 # virtualenv
+<<<<<<< HEAD
 .venv*
 venv*/
 ENV*/
+=======
+.venv
+venv/
+ENV/
+>>>>>>> temp-branch
 
 # Spyder project settings
 .spyderproject
