@@ -35,6 +35,9 @@ import sys
 from pathlib import Path
 
 import torch
+import numpy as np
+import json
+
 
 FILE = Path(__file__).resolve()
 ROOT = FILE.parents[1]  # YOLOv5 root directory
@@ -99,6 +102,7 @@ def run(
 ):
     source = str(source)
     save_img = not nosave and not source.endswith(".txt")  # save inference images
+    # print("&&", save_img)
     is_file = Path(source).suffix[1:] in (IMG_FORMATS + VID_FORMATS)
     is_url = source.lower().startswith(("rtsp://", "rtmp://", "http://", "https://"))
     webcam = source.isnumeric() or source.endswith(".streams") or (is_url and not is_file)
@@ -115,25 +119,35 @@ def run(
     model = DetectMultiBackend(weights, device=device, dnn=dnn, data=data, fp16=half)
     stride, names, pt = model.stride, model.names, model.pt
     imgsz = check_img_size(imgsz, s=stride)  # check image size
+    # print('#########3333', imgsz)
 
     # Dataloader
     bs = 1  # batch_size
+    print("bs")
     if webcam:
         view_img = check_imshow(warn=True)
         dataset = LoadStreams(source, img_size=imgsz, stride=stride, auto=pt, vid_stride=vid_stride)
+        print('#########3333', imgsz)
         bs = len(dataset)
+        print("bss", bs)
     elif screenshot:
         dataset = LoadScreenshots(source, img_size=imgsz, stride=stride, auto=pt)
+        print("elif")
     else:
+        print("else")
         dataset = LoadImages(source, img_size=imgsz, stride=stride, auto=pt, vid_stride=vid_stride)
+
     vid_path, vid_writer = [None] * bs, [None] * bs
 
     # Run inference
     model.warmup(imgsz=(1 if pt else bs, 3, *imgsz))  # warmup
     seen, windows, dt = 0, [], (Profile(device=device), Profile(device=device), Profile(device=device))
     for path, im, im0s, vid_cap, s in dataset:
+        print("for", im.shape)
+        print("for2", im0s[0].shape)
         with dt[0]:
             im = torch.from_numpy(im).to(model.device)
+            print("??",im.shape)
             im = im.half() if model.fp16 else im.float()  # uint8 to fp16/32
             im /= 255  # 0 - 255 to 0.0 - 1.0
             if len(im.shape) == 3:
@@ -142,6 +156,7 @@ def run(
         # Inference
         with dt[1]:
             visualize = increment_path(save_dir / Path(path).stem, mkdir=True) if visualize else False
+
             pred, proto = model(im, augment=augment, visualize=visualize)[:2]
 
         # NMS
@@ -156,6 +171,8 @@ def run(
             seen += 1
             if webcam:  # batch_size >= 1
                 p, im0, frame = path[i], im0s[i].copy(), dataset.count
+                print("w222", im0.shape)
+                cv2.imwrite("door_handle.jpg", im0)
                 s += f"{i}: "
             else:
                 p, im0, frame = path, im0s.copy(), getattr(dataset, "frame", 0)
@@ -164,6 +181,10 @@ def run(
             save_path = str(save_dir / p.name)  # im.jpg
             txt_path = str(save_dir / "labels" / p.stem) + ("" if dataset.mode == "image" else f"_{frame}")  # im.txt
             s += "%gx%g " % im.shape[2:]  # print string
+            height, width = im.shape[2:]
+
+            print("w222", im0.shape)
+            ## im0 (480, 640, 3)
             imc = im0.copy() if save_crop else im0  # for save_crop
             annotator = Annotator(im0, line_width=line_thickness, example=str(names))
             if len(det):
@@ -199,6 +220,8 @@ def run(
 
                 # Write results
                 for j, (*xyxy, conf, cls) in enumerate(reversed(det[:, :6])):
+
+
                     if save_txt:  # Write to file
                         seg = segments[j].reshape(-1)  # (n,2) to (n*2)
                         line = (cls, *seg, conf) if save_conf else (cls, *seg)  # label format
@@ -209,18 +232,41 @@ def run(
                         c = int(cls)  # integer class
                         label = None if hide_labels else (names[c] if hide_conf else f"{names[c]} {conf:.2f}")
                         annotator.box_label(xyxy, label, color=colors(c, True))
+                        print()
                         # annotator.draw.polygon(segments[j], outline=colors(c, True), width=3)
+
+                        if conf >= 0.6 and names[int(c)]=="door-handle":
+                            xyxy = [int(x.item()) for x in xyxy]
+                            mask = np.zeros((height, width), dtype=bool)
+                            mask[xyxy[1]:xyxy[3], xyxy[0]:xyxy[2]] = 1
+                            mask_uint8 = mask.astype(np.uint8) * 255
+                            cv2.imwrite("bbox_mask.png", mask_uint8)
+
+
+                            with open('/home/lee/data.json', 'w') as f:
+                                json.dump(xyxy, f)
+                            # cv2.imwrite("door_handle.jpg", im0)
+                            print("detect!!!!!!!!!11")
+                            torch.cuda.empty_cache()
+                            sys.exit(1)
+
+
+
                     if save_crop:
                         save_one_box(xyxy, imc, file=save_dir / "crops" / names[c] / f"{p.stem}.jpg", BGR=True)
+
 
             # Stream results
             im0 = annotator.result()
             if view_img:
                 if platform.system() == "Linux" and p not in windows:
+                    print("8*")
                     windows.append(p)
                     cv2.namedWindow(str(p), cv2.WINDOW_NORMAL | cv2.WINDOW_KEEPRATIO)  # allow window resize (Linux)
                     cv2.resizeWindow(str(p), im0.shape[1], im0.shape[0])
+                    print( "window", im0.shape[1], im0.shape[0])
                 cv2.imshow(str(p), im0)
+                print("window", im0.shape)
                 if cv2.waitKey(1) == ord("q"):  # 1 millisecond
                     exit()
 
@@ -246,9 +292,14 @@ def run(
         # Print time (inference-only)
         LOGGER.info(f"{s}{'' if len(det) else '(no detections), '}{dt[1].dt * 1E3:.1f}ms")
 
+
+
+
     # Print results
     t = tuple(x.t / seen * 1e3 for x in dt)  # speeds per image
     LOGGER.info(f"Speed: %.1fms pre-process, %.1fms inference, %.1fms NMS per image at shape {(1, 3, *imgsz)}" % t)
+
+
     if save_txt or save_img:
         s = f"\n{len(list(save_dir.glob('labels/*.txt')))} labels saved to {save_dir / 'labels'}" if save_txt else ""
         LOGGER.info(f"Results saved to {colorstr('bold', save_dir)}{s}")

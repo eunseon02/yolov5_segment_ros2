@@ -445,8 +445,8 @@ def check_img_size(imgsz, s=32, floor=0):
 def check_imshow(warn=False):
     """Checks environment support for image display; warns on failure if `warn=True`."""
     try:
-        assert not is_jupyter()
-        assert not is_docker()
+        # assert not is_jupyter()
+        # assert not is_docker()
         cv2.imshow("test", np.zeros((1, 1, 3)))
         cv2.waitKey(1)
         cv2.destroyAllWindows()

@@ -439,21 +439,14 @@ class LoadStreams:
         self.vid_stride = vid_stride  # video frame-rate stride
         sources = Path(sources).read_text().rsplit() if os.path.isfile(sources) else [sources]
         n = len(sources)
+        print("n", n)
         self.sources = [clean_str(x) for x in sources]  # clean source names for later
         self.imgs, self.fps, self.frames, self.threads = [None] * n, [0] * n, [0] * n, [None] * n
         for i, s in enumerate(sources):  # index, source
             # Start thread to read frames from video stream
             st = f"{i + 1}/{n}: {s}... "
-            if urlparse(s).hostname in ("www.youtube.com", "youtube.com", "youtu.be"):  # if source is YouTube video
-                # YouTube format i.e. 'https://www.youtube.com/watch?v=Zgi9g1ksQHc' or 'https://youtu.be/LNwODJXcvt4'
-                check_requirements(("pafy", "youtube_dl==2020.12.2"))
-                import pafy
-
-                s = pafy.new(s).getbest(preftype="mp4").url  # YouTube URL
             s = eval(s) if s.isnumeric() else s  # i.e. s = '0' local webcam
-            if s == 0:
-                assert not is_colab(), "--source 0 webcam unsupported on Colab. Rerun command in a local environment."
-                assert not is_kaggle(), "--source 0 webcam unsupported on Kaggle. Rerun command in a local environment."
+
             cap = cv2.VideoCapture(s)
             assert cap.isOpened(), f"{st}Failed to open {s}"
             w = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
@@ -507,12 +500,21 @@ class LoadStreams:
             raise StopIteration
 
         im0 = self.imgs.copy()
+        # print("im0.shape", im0.shape)
+        for x in im0:
+            print("x.shape", x.shape)
         if self.transforms:
+            print("if")
             im = np.stack([self.transforms(x) for x in im0])  # transforms
         else:
+            # print("x.shape", x.shape)
+            for x in im0:
+                print("x.shape", x.shape)
+            # print("else")
             im = np.stack([letterbox(x, self.img_size, stride=self.stride, auto=self.auto)[0] for x in im0])  # resize
             im = im[..., ::-1].transpose((0, 3, 1, 2))  # BGR to RGB, BHWC to BCHW
             im = np.ascontiguousarray(im)  # contiguous
+            print("im.shape", im.shape)
 
         return self.sources, im, im0, None, ""
 
